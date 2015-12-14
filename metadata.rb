@@ -1,0 +1,7 @@
+name 'mediawiki_backup'
+maintainer 'Andrew Holt'
+maintainer_email 'andrew@theholts.org'
+license 'gplv3'
+description 'Installs/Configures mediawiki_backup'
+long_description 'Installs/Configures mediawiki_backup'
+version '0.1.0'
