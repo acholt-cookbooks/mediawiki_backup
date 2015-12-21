@@ -1,7 +1,9 @@
-name 'mediawiki_backup'
-maintainer 'Andrew Holt'
+name             'mediawiki_backup'
+maintainer       'Andrew Holt'
 maintainer_email 'andrew@theholts.org'
-license 'gplv3'
-description 'Installs/Configures mediawiki_backup'
-long_description 'Installs/Configures mediawiki_backup'
-version '0.1.0'
+license          'GNU Public License 3.0'
+description      'Installs/Configures mediawiki_backup'
+long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
+version          '0.1.1'
+
+depends 'cron', '~> 1.7.0'

@@ -1,0 +1,126 @@
+#!/bin/bash
+#
+# Cookbook Name:: mediawiki_backup
+# Template:: mediawiki-backup
+#
+# Copyright (C) 2015  Andrew Holt
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+
+DATE=$(date "+%Y%m%d")
+LOGGER='/usr/bin/logger -p info -t mediawiki-backup'
+BACKUPNAME='<%= node['mediawiki_backup']['backup_name'] %>'
+WORKINGDIR="<%= node['mediawiki_backup']['working_dir'] %>/$BACKUPNAME"
+MAINTMSG="\$wgReadOnly = 'Dumping Database, Access will be restored shortly';"
+WIKIDIR='<%= node['mediawiki_backup']['wiki_dir'] %>'
+WIKICONFIG='<%= node['mediawiki_backup']['wiki_config'] %>'
+BACKUPSTORE='<%= node['mediawiki_backup']['backup_store'] %>'
+RETENTION_DAYS='<%= node['mediawiki_backup']['retention_days'] %>'
+DBNAME=$(grep -i 'wgDBname' $WIKICONFIG/LocalSettings.php | awk '{print $3}' | cut -d '"' -f2)
+DBUSER=$(grep -i 'wgDBuser' $WIKICONFIG/LocalSettings.php | awk '{print $3}' | cut -d '"' -f2)
+DBPASS=$(grep -i 'wgDBpassword' $WIKICONFIG/LocalSettings.php | awk '{print $3}' | cut -d '"' -f2)
+DBCHARSET=$(grep -i 'wgDBTableOptions' $WIKICONFIG/LocalSettings.php | tr ' ' '\n' | grep CHARSET | cut -d '"' -f1 | awk -F= '{print $2}')
+SSLCERTS='<%= node['mediawiki_backup']['ssl_certs'].join(' ') %>'
+
+
+function ERROR {
+  echo "Backup Failed"
+  CLEANUP
+  exit 1;
+
+}
+
+
+#Make TMP
+function MKDIR {
+  mkdir -m 770 -vp $WORKINGDIR | $LOGGER
+
+}
+
+
+#Set Wiki into read-only mode to protect the DB
+function SETRO {
+  if grep -q 'wgReadOnly' $WIKICONFIG/LocalSettings.php 2>/dev/null ; then
+    echo 'Warning Wiki already set as Read Only' | $LOGGER
+  else
+    echo 'Setting Wiki as Read Only' | $LOGGER
+    echo $MAINTMSG >> $WIKICONFIG/LocalSettings.php || ERROR
+  fi
+
+}
+
+
+#Database backup
+function DBBACKUP {
+  echo "Backuping up MySQL DB $DBNAME" | $LOGGER
+  mysqldump --default-character-set=$DBCHARSET --user=$DBUSER \
+    --password=$DBPASS "$DBNAME" > $WORKINGDIR/mysql-dump-${DATE}.sql || ERROR
+
+}
+
+
+#Backup the following configuration files and folders
+function DATABACKUP {
+  echo "Backuping up $WIKIDIR" | $LOGGER
+  tar -czphf $WORKINGDIR/wikidata_$DATE.tar.gz $WIKIDIR --ignore-failed-read || ERROR
+
+}
+
+
+#Backup all the wiki/http/ssl config
+function CONFBACKUP {
+  echo "Backuping up $WIKICONFIG" | $LOGGER
+  tar -czphf $WORKINGDIR/wikiconf_$DATE.tar.gz $WIKICONFIG $SSLCERTS --ignore-failed-read || ERROR
+
+}
+
+
+#Compress all files to save space
+function ALLCOMPRESS {
+  echo 'Compressing and shipping' | $LOGGER
+  cd $WORKINGDIR/..
+  tar -czpf $BACKUPSTORE/${BACKUPNAME}_$DATE.tar.gz $BACKUPNAME || ERROR
+
+}
+
+
+#Set Wiki back into Read/Write
+function SETRW {
+  echo 'Setting Wiki as Read/Write' | $LOGGER
+  echo 'Backup Complete' | $LOGGER
+  sed -i '/wgReadOnly/d' $WIKICONFIG/LocalSettings.php || ERROR
+
+}
+
+
+#Clean up working directory
+function CLEANUP {
+  echo 'Cleaning up working directory' | $LOGGER
+  rm -rf $WORKINGDIR || ERROR
+
+}
+
+
+#Clean up old Backups
+function RETENTION {
+  echo "Removing backups older then $RETENTION_DAYS" days | $LOGGER
+  find $BACKUPSTORE/ -maxdepth 1 -type f -mtime +${RETENTION_DAYS} -exec rm -f {} \; || ERROR
+
+}
+
+
+MKDIR && SETRO && DBBACKUP && DATABACKUP && CONFBACKUP && ALLCOMPRESS && SETRW && CLEANUP && RETENTION
+
