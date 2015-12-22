@@ -33,6 +33,11 @@ directory node['mediawiki_backup']['backup_store'] do
   action :create
 end
 
+#Directory doesn't exist on Ubuntu systems
+directory '/usr/local/bin' do
+  action :create
+end
+
 template '/usr/local/bin/mediawiki-backup.sh' do
   source 'mediawiki-backup.erb'
   owner  'root'
