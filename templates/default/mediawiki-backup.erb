@@ -38,6 +38,7 @@ SSLCERTS='<%= node['mediawiki_backup']['ssl_certs'].join(' ') %>'
 
 function ERROR {
   echo "Backup Failed"
+  SETRW
   CLEANUP
   exit 1;
 
@@ -100,7 +101,6 @@ function ALLCOMPRESS {
 #Set Wiki back into Read/Write
 function SETRW {
   echo 'Setting Wiki as Read/Write' | $LOGGER
-  echo 'Backup Complete' | $LOGGER
   sed -i '/wgReadOnly/d' $WIKICONFIG/LocalSettings.php || ERROR
 
 }
@@ -123,4 +123,8 @@ function RETENTION {
 
 
 MKDIR && SETRO && DBBACKUP && DATABACKUP && CONFBACKUP && ALLCOMPRESS && SETRW && CLEANUP && RETENTION
+
+if [ $? = 0  ]; then
+  echo 'Backup Complete' | $LOGGER
+fi
 
