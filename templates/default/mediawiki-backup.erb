@@ -44,13 +44,11 @@ function ERROR {
 
 }
 
-
 #Make TMP
 function MKDIR {
   mkdir -m 770 -vp $WORKINGDIR | $LOGGER
 
 }
-
 
 #Set Wiki into read-only mode to protect the DB
 function SETRO {
@@ -63,7 +61,6 @@ function SETRO {
 
 }
 
-
 #Database backup
 function DBBACKUP {
   echo "Backuping up MySQL DB $DBNAME" | $LOGGER
@@ -72,7 +69,6 @@ function DBBACKUP {
 
 }
 
-
 #Backup the following configuration files and folders
 function DATABACKUP {
   echo "Backuping up $WIKIDIR" | $LOGGER
@@ -80,14 +76,12 @@ function DATABACKUP {
 
 }
 
-
 #Backup all the wiki/http/ssl config
 function CONFBACKUP {
   echo "Backuping up $WIKICONFIG" | $LOGGER
   tar -czphf $WORKINGDIR/wikiconf_$DATE.tar.gz $WIKICONFIG $SSLCERTS || ERROR
 
 }
-
 
 #Compress all files to save space
 function ALLCOMPRESS {
@@ -97,14 +91,12 @@ function ALLCOMPRESS {
 
 }
 
-
 #Set Wiki back into Read/Write
 function SETRW {
   echo 'Setting Wiki as Read/Write' | $LOGGER
   sed -i '/wgReadOnly/d' $WIKICONFIG/LocalSettings.php || ERROR
 
 }
-
 
 #Clean up working directory
 function CLEANUP {
@@ -113,16 +105,16 @@ function CLEANUP {
 
 }
 
-
 #Clean up old Backups
 function RETENTION {
   echo "Removing backups older then $RETENTION_DAYS" days | $LOGGER
-  find $BACKUPSTORE/ -maxdepth 1 -type f -mtime +${RETENTION_DAYS} -exec rm -f {} \; || ERROR
+  find $BACKUPSTORE/ -maxdepth 1 -type f -mtime +${RETENTION_DAYS} \
+    -exec rm -f {} \; || ERROR
 
 }
 
-
-MKDIR && SETRO && DBBACKUP && DATABACKUP && CONFBACKUP && ALLCOMPRESS && SETRW && CLEANUP && RETENTION
+MKDIR && SETRO && DBBACKUP && DATABACKUP && CONFBACKUP \
+  && ALLCOMPRESS && SETRW && CLEANUP && RETENTION
 
 if [ $? = 0  ]; then
   echo 'Backup Complete' | $LOGGER
