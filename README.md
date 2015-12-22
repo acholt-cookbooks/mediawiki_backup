@@ -37,6 +37,10 @@ wikiserver.json the is applied to all MediaWiki standalone server.
       "mediawiki_backup": {
         "mailto": "backup@example.com",
         "retention_days": "8"
+        "ssl_certs": [
+          "/etc/pki/tls/private/server.key",
+          "/etc/pki/tls/certs/server.crt"
+        ]
       }
     },
     "run_list": ["mediawiki_backup"]
