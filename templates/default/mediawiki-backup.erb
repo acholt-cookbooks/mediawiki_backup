@@ -100,14 +100,15 @@ function DUMPXML {
 #Backup the following configuration files and folders
 function DATABACKUP {
   echo "Backuping up $WIKIDIR" | $LOGGER
-  tar -czphf $WORKINGDIR/wikidata_$DATE.tar.gz $WIKIDIR || ERROR
+  tar -czphf $WORKINGDIR/wikidata_$DATE.tar.gz $WIKIDIR &>/dev/null || ERROR
 
 }
 
 #Backup all the wiki/http/ssl config
 function CONFBACKUP {
   echo "Backuping up $WIKICONFIG" | $LOGGER
-  tar -czphf $WORKINGDIR/wikiconf_$DATE.tar.gz $WIKICONFIG $SSLCERTS || ERROR
+  tar -czphf $WORKINGDIR/wikiconf_$DATE.tar.gz $WIKICONFIG $SSLCERTS \
+    &>/dev/null || ERROR
 
 }
 
