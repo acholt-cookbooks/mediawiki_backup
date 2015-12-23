@@ -29,10 +29,24 @@ WIKIDIR='<%= node['mediawiki_backup']['wiki_dir'] %>'
 WIKICONFIG='<%= node['mediawiki_backup']['wiki_config'] %>'
 BACKUPSTORE='<%= node['mediawiki_backup']['backup_store'] %>'
 RETENTION_DAYS='<%= node['mediawiki_backup']['retention_days'] %>'
-DBNAME=$(grep -i 'wgDBname' $WIKICONFIG/LocalSettings.php | awk '{print $3}' | cut -d '"' -f2)
-DBUSER=$(grep -i 'wgDBuser' $WIKICONFIG/LocalSettings.php | awk '{print $3}' | cut -d '"' -f2)
-DBPASS=$(grep -i 'wgDBpassword' $WIKICONFIG/LocalSettings.php | awk '{print $3}' | cut -d '"' -f2)
-DBCHARSET=$(grep -i 'wgDBTableOptions' $WIKICONFIG/LocalSettings.php | tr ' ' '\n' | grep CHARSET | cut -d '"' -f1 | awk -F= '{print $2}')
+DBNAME=$(grep -i 'wgDBname' $WIKICONFIG/LocalSettings.php \
+  | awk '{print $3}' \
+  | cut -d '"' -f2
+)
+DBUSER=$(grep -i 'wgDBuser' $WIKICONFIG/LocalSettings.php \
+  | awk '{print $3}' \
+  | cut -d '"' -f2
+)
+DBPASS=$(grep -i 'wgDBpassword' $WIKICONFIG/LocalSettings.php \
+  | awk '{print $3}' \
+  | cut -d '"' -f2
+)
+DBCHARSET=$(grep -i 'wgDBTableOptions' $WIKICONFIG/LocalSettings.php \
+  | tr ' ' '\n' \
+  | grep CHARSET \
+  | cut -d '"' -f1 \
+  | awk -F= '{print $2}'
+)
 SSLCERTS='<%= node['mediawiki_backup']['ssl_certs'].join(' ') %>'
 
 
@@ -64,8 +78,11 @@ function SETRO {
 #Database backup
 function DBBACKUP {
   echo "Backuping up MySQL DB $DBNAME" | $LOGGER
-  mysqldump --default-character-set=$DBCHARSET --user=$DBUSER \
-    --password=$DBPASS "$DBNAME" > $WORKINGDIR/mysql-dump-${DATE}.sql || ERROR
+  mysqldump \
+    --default-character-set=$DBCHARSET \
+    --user=$DBUSER \
+    --password=$DBPASS \
+    "$DBNAME" > $WORKINGDIR/mysql-dump-${DATE}.sql || ERROR
 
 }
 
@@ -119,7 +136,10 @@ function CLEANUP {
 #Clean up old Backups
 function RETENTION {
   echo "Removing backups older then $RETENTION_DAYS" days | $LOGGER
-  find $BACKUPSTORE/ -maxdepth 1 -type f -mtime +${RETENTION_DAYS} \
+  find $BACKUPSTORE/ \
+    -maxdepth 1 \
+    -type f \
+    -mtime +${RETENTION_DAYS} \
     -exec rm -f {} \; || ERROR
 
 }
