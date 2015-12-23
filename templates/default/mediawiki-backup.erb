@@ -69,6 +69,17 @@ function DBBACKUP {
 
 }
 
+#Backup the content of the wiki (XML dump)
+function DUMPXML {
+  echo 'Creating XML Dump' | $LOGGER
+  php $WIKIDIR/maintenance/dumpBackup.php \
+    --full \
+    --uploads \
+    --quiet \
+    --output=file:$WORKINGDIR/xml-dump-${DATE}.xml || ERROR
+
+}
+
 #Backup the following configuration files and folders
 function DATABACKUP {
   echo "Backuping up $WIKIDIR" | $LOGGER
@@ -113,8 +124,8 @@ function RETENTION {
 
 }
 
-MKDIR && SETRO && DBBACKUP && DATABACKUP && CONFBACKUP \
-  && ALLCOMPRESS && SETRW && CLEANUP && RETENTION
+MKDIR && SETRO && DBBACKUP && DUMPXML && DATABACKUP \
+  && CONFBACKUP && ALLCOMPRESS && SETRW && CLEANUP && RETENTION
 
 if [ $? = 0  ]; then
   echo 'Backup Complete' | $LOGGER
