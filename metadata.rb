@@ -11,7 +11,7 @@ version          '0.3.1'
 end
 supports 'ubuntu', '>= 12.04'
 
-source_url 'https://github.com/acholt/chef_mediawiki_backup'
-issues_url 'https://github.com/acholt/chef_mediawiki_backup/issues'
+source_url 'https://github.com/acholt-cookbooks/mediawiki_backup'
+issues_url 'https://github.com/acholt-cookbooks/mediawiki_backup/issues'
 
 depends 'cron', '~> 1.7.0'
