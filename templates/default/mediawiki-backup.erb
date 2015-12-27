@@ -51,7 +51,7 @@ SSLCERTS='<%= node['mediawiki_backup']['ssl_certs'].join(' ') %>'
 
 
 function ERROR {
-  echo "Backup Failed"
+  echo "Backup Failed" | $LOGGER
   SETRW
   CLEANUP
   exit 1;
