@@ -29,7 +29,7 @@ MAILTO  = "#{node["mediawiki_backup"]["mailto"]}"
 directory node['mediawiki_backup']['backup_store'] do
   owner 'root'
   group 'root'
-  mode  "0750"
+  mode  '0750'
   action :create
 end
 

@@ -4,7 +4,7 @@ maintainer_email 'andrew@theholts.org'
 license          'GNU Public License 3.0'
 description      'Installs/Configures mediawiki_backup'
 long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
-version          '0.3.2'
+version          '0.3.3'
 
 %w{ centos redhat }.each do |osel|
   supports osel, '>= 5.0'
